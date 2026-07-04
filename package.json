@@ -1,0 +1,33 @@
+{
+  "name": "xxscreeps-mod-discord",
+  "version": "0.1.0",
+  "description": "xxscreeps mod: Discord OAuth2 login/registration (no email) and Discord DM notifications.",
+  "type": "module",
+  "xxscreeps": true,
+  "exports": {
+    ".": "./index.js",
+    "./*": "./*"
+  },
+  "files": [
+    "index.js",
+    "config.js",
+    "config.schema.json",
+    "backend.js",
+    "main.js",
+    "lib/discord.js",
+    "lib/prefs.js",
+    "lib/commands.js",
+    "scripts/register-commands.js"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "xxscreeps": "*"
+  },
+  "peerDependenciesMeta": {
+    "xxscreeps": {
+      "optional": true
+    }
+  }
+}

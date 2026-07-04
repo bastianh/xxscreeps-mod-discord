@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "discord": {
+      "type": "object",
+      "description": "Discord mod settings: OAuth2 login/registration and DM notifications.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Discord application \"Client ID\". Required for Discord login."
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "Discord application \"Client Secret\". Required for Discord login."
+        },
+        "botToken": {
+          "type": "string",
+          "description": "Bot token used to DM users their notifications. Required for Discord notifications. The bot must share a mutual guild with each recipient."
+        },
+        "publicKey": {
+          "type": "string",
+          "description": "Discord application public key (Developer Portal → General Information). Required for slash commands (verifies the interactions endpoint signature)."
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "Optional override of the OAuth callback URL. Defaults to `<request origin>/api/auth/discord/callback`. Must be registered as a redirect URI in the Discord app settings."
+        }
+      }
+    }
+  }
+}
