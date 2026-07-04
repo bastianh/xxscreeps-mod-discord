@@ -2,6 +2,7 @@
   "name": "xxscreeps-mod-discord",
   "version": "0.1.0",
   "description": "xxscreeps mod: Discord OAuth2 login/registration (no email) and Discord DM notifications.",
+  "license": "ISC",
   "type": "module",
   "xxscreeps": true,
   "exports": {
