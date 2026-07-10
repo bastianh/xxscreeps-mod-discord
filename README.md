@@ -120,11 +120,25 @@ to register the commands), slash commands work.
 
 Registered as a `main`-service transport via the notifications mod's
 `registerSendUserNotifications`. When a user's notifications are drained, the mod
-looks up their linked Discord id and DMs the batched messages (error notifications
-are prefixed with ⚠️, repeated messages get an `(xN)` count). Users without a
-linked Discord account are skipped. Delivery respects each user's existing in-game
-notification preferences (throttling, grouping, disable) — this mod is only the
-final delivery hop.
+looks up their linked Discord id and DMs the whole batch as one message: a
+**New notifications:** header (with the batch's UTC date) followed by a code block
+of timestamped lines, oldest first:
+
+````text
+**New notifications:** `2026-07-10 UTC`
+```
+[14:23:05] Creep Harvester1 died in room W7N3
+[14:24:40] ⚠️ Script error: Cannot read property x of undefined (x3)
+[14:27:05] Attack! Hostile creep in W7N3 (x2)
+```
+````
+
+Each line is `[HH:MM:SS]` (UTC) plus the message; error notifications are prefixed
+with ⚠️ and repeated ones get an `(xN)` count. The body is fence-safe (backtick
+runs in a message can't break out of the code block) and truncated to stay under
+Discord's 2000-char message limit. Users without a linked Discord account are
+skipped. Delivery respects each user's existing in-game notification preferences
+(throttling, grouping, disable) — this mod is only the final delivery hop.
 
 Failed DMs log Discord's structured error, so the reason is visible in the server
 log — e.g. `send DM failed (403 code 50278: Cannot send messages to this user due

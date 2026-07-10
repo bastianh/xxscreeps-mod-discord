@@ -14,7 +14,7 @@ const botToken = config.discord?.botToken
 const clientId = config.discord?.clientId
 
 // Discord's single-message content limit is 2000 chars; stay under it with room
-// for the truncation marker.
+// for the header, the code-block fences, and the truncation marker.
 const MAX_CONTENT = 1900
 
 // Keyval marker: hash of the last successfully-registered command set. Registration
@@ -53,20 +53,52 @@ registerShardInitializer(shard => {
   }
 })
 
+const pad2 = n => String(n).padStart(2, '0')
+
+// HH:MM:SS (UTC) — a compact per-line stamp inside the code block.
+function formatTime(ms) {
+  const d = new Date(ms)
+  return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`
+}
+
+// YYYY-MM-DD (UTC) — shown once in the header so the per-line stamps stay short.
+function formatDate(ms) {
+  const d = new Date(ms)
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`
+}
+
+// Break up any backtick run with a zero-width space (invisible in Discord) so a
+// notification body can't terminate the ``` code block we wrap it in.
+function fenceSafe(text) {
+  return text.replace(/`/g, '`' + String.fromCharCode(0x200b))
+}
+
+// Notifications arrive batched (grouped by the drain interval), each row carrying
+// its own `date` (epoch ms), a merged occurrence `count`, and a `type`. Render
+// them as a "New notifications:" header plus a code block of timestamped lines,
+// so a burst reads as one tidy message instead of a wall of text.
 function formatNotifications(rows) {
-  const lines = rows.map(row => {
+  const sorted = [ ...rows ].sort((a, b) => (a.date || 0) - (b.date || 0))
+  const lines = sorted.map(row => {
+    const stamp = Number.isFinite(row.date) ? `[${formatTime(row.date)}] ` : ''
     const prefix = row.type === 'error' ? '⚠️ ' : ''
     const suffix = row.count > 1 ? ` (x${row.count})` : ''
-    return `${prefix}${row.message}${suffix}`
+    return `${stamp}${prefix}${fenceSafe(String(row.message))}${suffix}`
   })
-  let content = lines.join('\n').trim()
-  if (content.length === 0) {
+  let body = lines.join('\n').trim()
+  if (body.length === 0) {
     return null
   }
-  if (content.length > MAX_CONTENT) {
-    content = `${content.slice(0, MAX_CONTENT)}\n…(truncated)`
+  const dates = sorted.map(row => row.date).filter(Number.isFinite)
+  const dateLabel = dates.length ? ` \`${formatDate(Math.max(...dates))} UTC\`` : ''
+  const header = `**New notifications:**${dateLabel}`
+  // Budget the code-block body against the cap, leaving room for the header, the
+  // fences (```\n … \n```), and the truncation marker.
+  const budget = MAX_CONTENT - header.length - 9
+  if (body.length > budget) {
+    body = `${body.slice(0, budget - 14).trimEnd()}\n…(truncated)`
   }
-  return content
+  return `${header}\n\`\`\`\n${body}\n\`\`\``
 }
 
 if (!botToken) {
