@@ -41,12 +41,15 @@ jobs:
       # on npmjs.com (see README), changesets/action auto-detects OIDC and
       # publishes with automatic provenance. It opens/updates the "Version
       # Packages" PR from pending changesets; merging that PR runs the
-      # publish-script (`pnpm release` -> `changeset publish`).
+      # publish command (`pnpm release` -> `changeset publish`).
+      # Pinned to @v1 (latest stable). OIDC trusted publishing is supported since
+      # v1.7.0. `v2` is prerelease-only (v2.0.0-next.*) and renames these inputs
+      # to version-script/publish-script — don't use it until it ships stable.
       - name: Create Release PR or publish to npm
-        uses: changesets/action@v2
+        uses: changesets/action@v1
         with:
-          version-script: pnpm run version-packages
-          publish-script: pnpm run release
+          version: pnpm run version-packages
+          publish: pnpm run release
           github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           NPM_CONFIG_PROVENANCE: "true"
