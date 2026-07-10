@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Only one release run at a time so the "Version Packages" PR and any publish
+# don't race each other.
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write # push tags, create GitHub releases, open the version PR
+  pull-requests: write # create/update the "Version Packages" PR
+  id-token: write # OIDC: authenticate to npm without a token (trusted publishing)
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      # Node 24 ships npm >= 11.5.1, required for npm's OIDC trusted publishing.
+      # `registry-url` points publish at the public npm registry; no auth token
+      # is written, so npm falls back to the OIDC flow.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # No NPM_TOKEN: with `id-token: write` and a trusted publisher configured
+      # on npmjs.com (see README), changesets/action auto-detects OIDC and
+      # publishes with automatic provenance. It opens/updates the "Version
+      # Packages" PR from pending changesets; merging that PR runs the
+      # publish-script (`pnpm release` -> `changeset publish`).
+      - name: Create Release PR or publish to npm
+        uses: changesets/action@v2
+        with:
+          version-script: pnpm run version-packages
+          publish-script: pnpm run release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NPM_CONFIG_PROVENANCE: "true"

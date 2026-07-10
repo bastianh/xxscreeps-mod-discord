@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Plain-JS mod with no build or test suite. Syntax-check every shipped
+      # module so a broken file can't merge. Runtime imports of `xxscreeps/*`
+      # can't be resolved without the host server, so nothing is executed.
+      - name: Syntax-check JS
+        run: git ls-files '*.js' | xargs -t -I {} node --check {}

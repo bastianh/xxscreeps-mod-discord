@@ -185,3 +185,26 @@ the auto-sync and the script import them.
 The endpoint verifies every request's Ed25519 signature against `discord.publicKey`
 using Node's built-in crypto (no extra dependency), and rejects anything unsigned or
 tampered with `401`.
+
+## Releasing
+
+Versioning and publishing are automated with
+[changesets](https://github.com/changesets/changesets), publishing via npm
+**trusted publishing (OIDC)** — no `NPM_TOKEN` secret, with automatic
+[provenance](https://docs.npmjs.com/generating-provenance-statements).
+
+1. Record your change: `pnpm changeset` (patch/minor/major + summary). Commit the
+   generated `.changeset/*.md`.
+2. Push / merge to `main` — `.github/workflows/release.yml` opens a **“Version
+   Packages”** PR. Merging it bumps the version, updates `CHANGELOG.md`, publishes
+   to npm via OIDC, and tags the release.
+
+One-time: on [npmjs.com](https://docs.npmjs.com/trusted-publishers), add a
+**GitHub Actions** trusted publisher to this package (owner `bastianh`, repo
+`xxscreeps-mod-discord`, workflow `release.yml`). The package is already on npm,
+so no first-publish bootstrap is needed. `.github/workflows/ci.yml` syntax-checks
+the JS on every push/PR.
+
+> Note: long-lived automation / 2FA-bypass npm tokens
+> [lose direct publishing ability around January 2027](https://github.blog/changelog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation/),
+> so OIDC is the forward-looking default here.

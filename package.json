@@ -3,8 +3,25 @@
   "version": "0.1.0",
   "description": "xxscreeps mod: Discord OAuth2 login/registration (no email) and Discord DM notifications.",
   "license": "ISC",
+  "author": "Bastian Hoyer",
   "type": "module",
   "xxscreeps": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bastianh/xxscreeps-mod-discord.git"
+  },
+  "homepage": "https://github.com/bastianh/xxscreeps-mod-discord#readme",
+  "bugs": {
+    "url": "https://github.com/bastianh/xxscreeps-mod-discord/issues"
+  },
+  "keywords": [
+    "screeps",
+    "xxscreeps",
+    "screepsmod",
+    "discord",
+    "oauth",
+    "notifications"
+  ],
   "exports": {
     ".": "./index.js",
     "./*": "./*"
@@ -20,6 +37,11 @@
     "lib/commands.js",
     "scripts/register-commands.js"
   ],
+  "scripts": {
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -30,5 +52,14 @@
     "xxscreeps": {
       "optional": true
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.0"
   }
 }
